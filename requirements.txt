@@ -1,0 +1,11 @@
+torch>=2.0
+torchvision>=0.15
+numpy>=1.24
+opencv-python>=4.8
+pandas>=2.0
+scikit-learn>=1.3
+Pillow>=10.0
+# optional, only needed if you switch backbones in build_backbone():
+# timm>=0.9
+# optional, only needed if you swap in a real landmark detector:
+# face-alignment
