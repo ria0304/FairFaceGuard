@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+data_root/
+checkpoints/
+*.pth
+*.pt
+AI-Face*/
+*.csv.gz
+.venv/
+venv/
+.DS_Store
+Thumbs.db
