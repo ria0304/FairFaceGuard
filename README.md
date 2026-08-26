@@ -9,6 +9,8 @@
 
 # Deepfake Detection Under Skin-Tone and Lighting Variations
 
+
+
 **Annotate it. Perturb it. Train on it. Disentangle it. Prove what actually moved the needle.**
 
 When a deepfake detector's accuracy differs across skin-tone groups, is it actually responding to skin tone — or to illumination/color cues that merely correlate with skin tone in the training data? This codebase is a complete research pipeline built to answer that question with a real causal test, not just a subgroup accuracy table.
