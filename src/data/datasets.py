@@ -26,7 +26,15 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 
+from src.data.illumination_binning import (
+    apply_boundaries,
+    compute_illumination_boundaries_from_train,
+    load_boundaries,
+    save_boundaries,
+)
+
 FITZPATRICK_TO_INT = {"I": 0, "II": 1, "III": 2, "IV": 3, "V": 4, "VI": 5}
+BOUNDARIES_FILENAME = "illumination_boundaries.json"
 
 DEFAULT_TRANSFORM = transforms.Compose([
     transforms.Resize((380, 380)),
@@ -50,14 +58,55 @@ class AnnotatedFaceDataset(Dataset):
         df = df[~df.get("flagged", False)]
 
         df["skin_bin"] = df["fitzpatrick_bin"].map(FITZPATRICK_TO_INT)
-        illum_mag = df[["illuminant_estimate_r", "illuminant_estimate_g", "illuminant_estimate_b"]].mean(axis=1) \
-            if "illuminant_estimate_r" in df.columns else pd.Series(np.random.rand(len(df)))
-        df["illum_bin"] = pd.qcut(illum_mag, 5, labels=False, duplicates="drop")
+        df = self._add_illum_bin(df, data_root)
 
         if split is not None and "split" in df.columns:
             df = df[df["split"] == split]
 
         self.df = df.reset_index(drop=True)
+
+    @staticmethod
+    def _add_illum_bin(df: pd.DataFrame, data_root: str) -> pd.DataFrame:
+        """Bin illuminant magnitude into 5 bins using boundaries computed
+        from the TRAIN split only (RESEARCH_AUDIT.md item 3), then applies
+        those fixed boundaries to every split. Boundaries are cached to
+        <data_root>/illumination_boundaries.json on first computation so
+        every AnnotatedFaceDataset instantiation (train/val/test are each
+        constructed separately) uses the exact same boundaries."""
+        if "illuminant_estimate_r" not in df.columns:
+            # No illuminant estimate available at all (shouldn't happen via
+            # the adapters, but keep the pipeline runnable for hand-built data).
+            df["illum_bin"] = pd.qcut(pd.Series(np.random.rand(len(df))), 5, labels=False, duplicates="drop")
+            return df
+
+        if "split" not in df.columns:
+            print(
+                "[datasets] WARNING: no 'split' column found -- falling back to whole-dataset "
+                "quantile binning for illumination. This leaks val/test distribution into bin "
+                "boundaries (RESEARCH_AUDIT.md item 3). Run "
+                "`python -m src.data.identity_split` first to add a 'split' column."
+            )
+            illum_mag = df[["illuminant_estimate_r", "illuminant_estimate_g", "illuminant_estimate_b"]].mean(axis=1)
+            df["illum_bin"] = pd.qcut(illum_mag, 5, labels=False, duplicates="drop")
+            return df
+
+        boundaries_path = os.path.join(data_root, BOUNDARIES_FILENAME)
+        if os.path.exists(boundaries_path):
+            boundaries = load_boundaries(boundaries_path)
+        else:
+            train_df = df[df["split"] == "train"]
+            if len(train_df) == 0:
+                raise ValueError(
+                    f"No 'train' split rows found in {data_root} and no cached "
+                    f"{BOUNDARIES_FILENAME} exists -- cannot compute illumination "
+                    "boundaries without training data. If this data_root is eval-only "
+                    "(e.g. Celeb-DF), copy the boundaries file from the training "
+                    "dataset's data_root instead."
+                )
+            boundaries = compute_illumination_boundaries_from_train(train_df, n_bins=5)
+            save_boundaries(boundaries, boundaries_path)
+
+        return apply_boundaries(df, boundaries, boundary_col="illum_bin")
 
     def __len__(self) -> int:
         return len(self.df)
