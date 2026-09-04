@@ -1,4 +1,4 @@
-```
+```gitignore
 # Python
 __pycache__/
 *.pyc
@@ -42,4 +42,59 @@ Thumbs.db
 .env
 .env.local
 *.env.*
+
+# ============================================================
+# FaceForensics++ - RESTRICTED
+# ============================================================
+
+# Authorized FF++ downloader obtained directly from the
+# FaceForensics++ authors - DO NOT COMMIT
+scripts/download_faceforensics.py
+
+# FaceForensics++ dataset
+data/faceforensics/
+data/FaceForensics++/
+data/FaceForensics/
+faceforensics/
+FaceForensics++/
+
+# Downloaded FF++ archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# FF++ generated/extracted data
+**/original_sequences/
+**/manipulated_sequences/
+**/original_sequences_youtube/
+**/manipulated_sequences_youtube/
+**/masks/
+
+# ============================================================
+# ML / Experiment Artifacts
+# ============================================================
+
+# Model checkpoints
+checkpoints/
+weights/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Experiment outputs
+outputs/
+results/
+runs/
+wandb/
+mlruns/
+
+# Python data artifacts
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.pkl
+*.pickle
 ```
