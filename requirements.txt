@@ -5,7 +5,18 @@ opencv-python>=4.8
 pandas>=2.0
 scikit-learn>=1.3
 Pillow>=10.0
-# optional, only needed if you switch backbones in build_backbone():
-# timm>=0.9
-# optional, only needed if you swap in a real landmark detector:
+mediapipe>=0.10        # landmark detector used by src/annotation/ita_fitzpatrick.py
+tqdm>=4.65              # progress bars in ffplus_adapter.py / celebdf_adapter.py
+
+# Required for the FF++/Celeb-DF video-based dataset adapters
+# (src/data/frame_extractor.py, ffplus_adapter.py, celebdf_adapter.py):
+facenet-pytorch>=2.5.0   # MTCNN face detection on extracted video frames
+
+# Required for the research-level backbone ablation
+# (src/experiments/backbone_ablation.py) -- Xception / ViT / CLIP-RN50:
+timm>=0.9
+
+# Optional, only needed for TensorBoard logging if you add it to train_baseline.py:
+# tensorboard>=2.13
+# Optional, only needed if you swap in an alternate landmark detector:
 # face-alignment
