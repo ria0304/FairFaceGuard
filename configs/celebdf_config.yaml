@@ -1,0 +1,52 @@
+# Celeb-DF (v2) dataset configuration -- cross-dataset validation, EVAL-ONLY
+#
+# Extends configs/baseline.yaml. Celeb-DF is never trained on in this
+# pipeline (see celebdf_adapter.py and src/experiments/cross_dataset_validator.py
+# docstrings) -- it exists purely to test whether subgroup gaps found on
+# FF++ generalize to a different manipulation method and identity pool.
+#
+# Usage:
+#   python -m src.data.celebdf_adapter \
+#       --celebdf_root <dataset.celebdf_root below> \
+#       --output_dir <dataset.data_root below> \
+#       --frames_per_video <dataset.frames_per_video>
+#
+#   python -m src.experiments.cross_dataset_validator \
+#       --train_data_root <ffplus data_root> \
+#       --test_data_root <this file's dataset.data_root>
+
+extends: "baseline.yaml"
+
+experiment:
+  name: "celebdf_cross_validation"
+  description: "Zero-shot cross-dataset evaluation of the FF++-trained baseline on Celeb-DF"
+
+dataset:
+  type: "celebdf"
+
+  # Root of the raw Celeb-DF v2 download (request access at
+  # https://github.com/yuezunli/celeb-deepfakeforensics).
+  celebdf_root: null  # e.g. /data/Celeb-DF
+
+  # Frames sampled per video. Kept equal to ffplus_config.yaml's value so
+  # per-video sampling density is comparable across the two datasets.
+  frames_per_video: 10
+  face_size: 380
+  sample_n: null
+
+  # Celeb-DF has no train/val role -- every row is written with split="test"
+  # by celebdf_adapter.py, so these ratios are not used for this dataset.
+  split_ratios:
+    train: 0.0
+    val: 0.0
+    test: 1.0
+
+  identity_grouping: "face_id_prefix"
+
+# Not applicable to this dataset -- Celeb-DF is not trained on, so
+# training/disentanglement sections from baseline.yaml are unused when
+# this config is the active data_root. Kept commented out rather than
+# deleted so the "extends" relationship stays literal (this file only
+# overrides what differs).
+# training: (inherited, unused for this dataset)
+# disentanglement: (inherited, unused for this dataset)
