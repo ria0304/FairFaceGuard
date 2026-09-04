@@ -1,4 +1,4 @@
-"""Shared evaluation metrics used across the baseline (Week 3), disentanglement
+="""Shared evaluation metrics used across the baseline (Week 3), disentanglement
 (Week 4), and reporting (Week 5) stages."""
 
 from __future__ import annotations
@@ -79,6 +79,80 @@ def subgroup_metric_table(
                 results.setdefault("__gap__", {})[metric] = max(vals) - min(vals)
 
     return results
+
+
+def compute_eer_threshold(y_true: np.ndarray, y_score: np.ndarray) -> float:
+    """Score threshold at the equal-error-rate operating point -- used by
+    compute_acer as the default decision threshold when none is supplied."""
+    from sklearn.metrics import roc_curve
+
+    fpr, tpr, thresholds = roc_curve(y_true, y_score)
+    fnr = 1 - tpr
+    idx = np.nanargmin(np.abs(fpr - fnr))
+    return float(thresholds[idx])
+
+
+def compute_acer(y_true: np.ndarray, y_score: np.ndarray, threshold: float | None = None) -> float:
+    """Average Classification Error Rate = (APCER + BPCER) / 2, the standard
+    reporting metric in face anti-spoofing / deepfake-detection literature
+    (ISO/IEC 30107-3). APCER = fake classified as real (attack presentation
+    error), BPCER = real classified as fake (bona fide presentation error).
+    Uses the EER threshold by default so ACER reduces to a close cousin of
+    EER at threshold=0.5 is not assumed."""
+    y_true = np.asarray(y_true)
+    y_score = np.asarray(y_score)
+    if threshold is None:
+        threshold = compute_eer_threshold(y_true, y_score)
+    y_pred = (y_score >= threshold).astype(int)
+
+    fake_mask = y_true == 1
+    real_mask = y_true == 0
+    apcer = float(np.mean(y_pred[fake_mask] == 0)) if fake_mask.any() else float("nan")
+    bpcer = float(np.mean(y_pred[real_mask] == 1)) if real_mask.any() else float("nan")
+    return (apcer + bpcer) / 2.0
+
+
+def compute_average_precision(y_true: np.ndarray, y_score: np.ndarray) -> float:
+    """Area under the precision-recall curve. More informative than AUC
+    under class imbalance (e.g. a manipulation-method subset with far more
+    fake than real frames), which subgroup slices of FF++/Celeb-DF often
+    have."""
+    from sklearn.metrics import average_precision_score
+
+    return float(average_precision_score(y_true, y_score))
+
+
+def subgroup_confusion_matrix(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    skin_bins: np.ndarray,
+    illum_bins: np.ndarray,
+    skin_names: dict[int, str] | None = None,
+    illum_names: dict[int, str] | None = None,
+    min_n: int = 5,
+):
+    """2D accuracy matrix, Fitzpatrick skin bin x illumination bin, as a
+    pandas DataFrame suitable for a heatmap in the paper. Cells with fewer
+    than `min_n` samples are left as NaN rather than an unreliable point
+    estimate."""
+    import pandas as pd
+
+    df = pd.DataFrame({
+        "y_true": np.asarray(y_true),
+        "correct": (np.asarray(y_true) == np.asarray(y_pred)).astype(float),
+        "skin": np.asarray(skin_bins),
+        "illum": np.asarray(illum_bins),
+    })
+
+    def _agg(group):
+        return group["correct"].mean() if len(group) >= min_n else np.nan
+
+    table = df.groupby(["skin", "illum"]).apply(_agg).unstack("illum")
+    if skin_names:
+        table = table.rename(index=skin_names)
+    if illum_names:
+        table = table.rename(columns=illum_names)
+    return table
 
 
 def bootstrap_ci(
