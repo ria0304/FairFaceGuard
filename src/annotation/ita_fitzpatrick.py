@@ -64,39 +64,132 @@ class SkinToneAnnotation:
 
 
 def detect_landmarks(image_bgr: np.ndarray) -> np.ndarray | None:
-    """Stub landmark detector hook.
-
-    Replace with a real 68/98-point face-alignment model in production, e.g.:
-        import face_alignment
-        fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D)
-        preds = fa.get_landmarks(image_bgr)
-        return preds[0] if preds else None
-
-    Returns an [68, 2] array of (x, y) pixel coordinates, or None if no face
-    is found. This stub returns a crude center-face grid so the rest of the
-    pipeline is runnable/testable without extra model downloads.
+    """Detect facial landmarks using MediaPipe Face Mesh.
+    
+    This is the primary landmark detection method for the FairFaceGuard pipeline.
+    MediaPipe Face Mesh provides 468 3D face landmarks with high accuracy and
+    real-time performance.
+    
+    For the ITA annotation pipeline, we use only the subset of landmarks that
+    correspond to the standard 68-point scheme (cheeks, forehead, nose bridge).
+    
+    Args:
+        image_bgr: Input image in BGR format (OpenCV convention).
+    
+    Returns:
+        Array of shape [68, 2] with (x, y) pixel coordinates, or None if no
+        face is detected.
+    
+    Raises:
+        ImportError: If mediapipe is not installed.
+    
+    Note:
+        If you need an alternative landmark detector, consider:
+        - face-alignment (https://github.com/1adrianb/face-alignment)
+        - dlib (http://dlib.net/)
+        
+        To use an alternative, replace this function's implementation while
+        maintaining the same return signature.
     """
+    try:
+        import mediapipe as mp
+    except ImportError:
+        raise ImportError(
+            "MediaPipe is required for landmark detection. "
+            "Install with: pip install mediapipe>=0.10.0\n"
+            "Alternatively, install face-alignment and modify detect_landmarks() "
+            "in src/annotation/ita_fitzpatrick.py to use it instead."
+        )
+    
+    mp_face_mesh = mp.solutions.face_mesh
+    face_mesh = mp_face_mesh.FaceMesh(
+        static_image_mode=True,
+        max_num_faces=1,
+        refine_landmarks=False,
+        min_detection_confidence=0.5,
+    )
+    
+    # Convert BGR to RGB for MediaPipe
+    image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+    results = face_mesh.process(image_rgb)
+    
+    if results.landmarks is None or len(results.landmarks) == 0:
+        face_mesh.close()
+        return None
+    
+    # Get the first detected face (468 landmarks)
+    mp_landmarks = results.landmarks[0]
     h, w = image_bgr.shape[:2]
-    cx, cy = w / 2, h / 2
-    # coarse synthetic layout covering the four patch regions used below
-    pts = np.zeros((68, 2))
-    pts[1] = [cx - 0.30 * w, cy + 0.05 * h]
-    pts[2] = [cx - 0.28 * w, cy + 0.10 * h]
-    pts[3] = [cx - 0.26 * w, cy + 0.15 * h]
-    pts[31] = [cx - 0.10 * w, cy + 0.05 * h]
-    pts[13] = [cx + 0.30 * w, cy + 0.05 * h]
-    pts[14] = [cx + 0.28 * w, cy + 0.10 * h]
-    pts[15] = [cx + 0.26 * w, cy + 0.15 * h]
-    pts[35] = [cx + 0.10 * w, cy + 0.05 * h]
-    pts[19] = [cx - 0.15 * w, cy - 0.25 * h]
-    pts[20] = [cx - 0.05 * w, cy - 0.28 * h]
-    pts[24] = [cx + 0.05 * w, cy - 0.28 * h]
-    pts[25] = [cx + 0.15 * w, cy - 0.25 * h]
-    pts[27] = [cx, cy - 0.05 * h]
-    pts[28] = [cx, cy]
-    pts[29] = [cx, cy + 0.05 * h]
-    pts[30] = [cx, cy + 0.10 * h]
-    return pts
+    
+    # Map MediaPipe 468 landmarks to approximate 68-point scheme positions
+    # MediaPipe indices: https://google.github.io/mediapipe/solutions/face_mesh.html
+    # We'll extract key landmarks and interpolate to get 68 points
+    
+    # Key correspondence (approximate):
+    # MediaPipe -> 68-point scheme
+    # Nose tip: 1 -> 30
+    # Left eye inner: 133 -> 36/39 region
+    # Right eye inner: 362 -> 42/45 region
+    # Mouth corners: 61, 291 -> 48, 54
+    # Cheek contours: use subsets
+    
+    # Extract relevant landmarks for skin-tone patches
+    # We need: left_cheek, right_cheek, forehead, nose_bridge
+    
+    # Simplified approach: use the actual MediaPipe landmarks directly
+    # mapped to our patch definitions
+    
+    # For 68-point compatibility, we'll create a mapping
+    # This is an approximation - for research use, consider using
+    # the native MediaPipe indices throughout
+    
+    pts_68 = np.zeros((68, 2))
+    
+    # Nose bridge (points 27-30 in 68-point)
+    # MediaPipe: 6 (bridge top), 197 (mid), 195 (lower), 1 (tip)
+    nose_bridge_mp = [6, 197, 195, 1]
+    for i, mp_idx in enumerate(nose_bridge_mp):
+        if mp_idx < len(mp_landmarks):
+            lm = mp_landmarks[mp_idx]
+            pts_68[27 + i] = [lm.x * w, lm.y * h]
+    
+    # Left cheek area (points 1-3, 31 in 68-point)
+    # MediaPipe: cheek region on left side of face (viewer's right)
+    left_cheek_mp = [116, 117, 118, 141]  # Approximate left cheek
+    for i, mp_idx in enumerate(left_cheek_mp[:3]):
+        if mp_idx < len(mp_landmarks):
+            lm = mp_landmarks[mp_idx]
+            pts_68[i + 1] = [lm.x * w, lm.y * h]
+    if len(left_cheek_mp) > 3 and left_cheek_mp[3] < len(mp_landmarks):
+        lm = mp_landmarks[left_cheek_mp[3]]
+        pts_68[31] = [lm.x * w, lm.y * h]
+    
+    # Right cheek area (points 13-15, 35 in 68-point)
+    right_cheek_mp = [345, 346, 347, 370]  # Approximate right cheek
+    for i, mp_idx in enumerate(right_cheek_mp[:3]):
+        if mp_idx < len(mp_landmarks):
+            lm = mp_landmarks[mp_idx]
+            pts_68[13 + i] = [lm.x * w, lm.y * h]
+    if len(right_cheek_mp) > 3 and right_cheek_mp[3] < len(mp_landmarks):
+        lm = mp_landmarks[right_cheek_mp[3]]
+        pts_68[35] = [lm.x * w, lm.y * h]
+    
+    # Forehead area (points 19-20, 24-25 in 68-point)
+    # MediaPipe: upper face region
+    forehead_mp = [10, 9, 151, 162]  # Approximate forehead
+    forehead_68_indices = [19, 20, 24, 25]
+    for i, mp_idx in enumerate(forehead_mp):
+        if mp_idx < len(mp_landmarks) and i < len(forehead_68_indices):
+            lm = mp_landmarks[mp_idx]
+            pts_68[forehead_68_indices[i]] = [lm.x * w, lm.y * h]
+    
+    face_mesh.close()
+    
+    # Verify we have valid landmarks (not all zeros)
+    if np.all(pts_68 == 0):
+        return None
+    
+    return pts_68
 
 
 def estimate_illuminant_gray_world(image_bgr: np.ndarray) -> np.ndarray:

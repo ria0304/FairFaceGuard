@@ -1,0 +1,276 @@
+# FairFaceGuard Configuration
+
+# =============================================================================
+# EXPERIMENT IDENTIFICATION
+# =============================================================================
+experiment:
+  name: "baseline_experiment"
+  seed: 42
+  description: "Baseline deepfake detector with skin-tone and illumination analysis"
+
+# =============================================================================
+# DATASET CONFIGURATION
+# =============================================================================
+dataset:
+  # Root directory containing frames/, labels.csv, annotations.csv
+  data_root: null  # Must be provided via command line or environment
+  
+  # Dataset type: "aiface", "ffpp", "celebdf", "dfdc", "custom"
+  type: "aiface"
+  
+  # Image resolution for model input
+  image_resolution: 380
+  
+  # Split ratios (must sum to 1.0)
+  split_ratios:
+    train: 0.7
+    val: 0.15
+    test: 0.15
+  
+  # Identity grouping strategy for leakage prevention
+  identity_grouping: "face_id_prefix"  # Options: face_id, face_id_prefix, source_video
+
+# =============================================================================
+# ANNOTATION CONFIGURATION
+# =============================================================================
+annotation:
+  # Landmark detector: "mediapipe" or "face_alignment"
+  landmark_detector: "mediapipe"
+  
+  # Minimum detection confidence for landmarks
+  min_landmark_confidence: 0.5
+  
+  # ITA annotation parameters
+  ita:
+    # Minimum patch pixels for valid ITA computation
+    min_patch_pixels: 20
+    # Maximum pose fraction before flagging
+    max_pose_frac: 0.30
+    # Saturation thresholds for confidence
+    sat_low: 5
+    sat_high: 250
+
+# =============================================================================
+# ILLUMINATION CONFIGURATION
+# =============================================================================
+illumination:
+  # Estimation method: "gray_world", "white_patch", "gray_edge"
+  estimation_method: "gray_world"
+  
+  # Number of illumination bins
+  n_bins: 5
+  
+  # IMPORTANT: Bin boundaries are computed from training data only
+  # and applied to validation/test sets
+
+# =============================================================================
+# SKIN-TONE CONFIGURATION
+# =============================================================================
+skin_tone:
+  # Number of Fitzpatrick bins (standard is 6)
+  n_bins: 6
+  
+  # ITA thresholds for Fitzpatrick mapping (degrees)
+  # Format: (upper_bound, label)
+  ita_thresholds:
+    - [55.0, "I"]
+    - [41.0, "II"]
+    - [28.0, "III"]
+    - [10.0, "IV"]
+    - [-30.0, "V"]
+    - [-90.0, "VI"]
+
+# =============================================================================
+# COUNTERFACTUAL CONFIGURATION
+# =============================================================================
+counterfactual:
+  # Generator type: "classical_lab" or "learned" (stub)
+  generator_type: "classical_lab"
+  
+  # Skin-tone intervention parameters
+  skin:
+    # Target ITA delta in degrees (positive = lighter, negative = darker)
+    ita_delta: 15.0
+  
+  # Illumination intervention parameters
+  illumination:
+    # Color temperature shift (-1 to +1, negative=cooler, positive=warmer)
+    color_temp_shift: 0.3
+    # Exposure shift in stops
+    exposure_stops: 0.5
+  
+  # Validation tolerances
+  validation:
+    # ITA tolerance in degrees for manipulation check
+    ita_tolerance: 8.0
+    # Illumination tolerance as fraction of original magnitude
+    illum_tolerance_frac: 0.15
+  
+  # Reject counterfactuals that fail validation
+  reject_invalid: false  # Set true for stricter quality control
+
+# =============================================================================
+# MODEL CONFIGURATION
+# =============================================================================
+model:
+  # Backbone architecture: "efficientnet_b4", "efficientnet_b0", "xception", "vit_b16"
+  backbone: "efficientnet_b4"
+  
+  # Use pretrained ImageNet weights
+  pretrained: true
+  
+  # Head hidden dimension
+  head_hidden: 256
+  
+  # Dropout rate
+  dropout: 0.2
+
+# =============================================================================
+# TRAINING CONFIGURATION
+# =============================================================================
+training:
+  # Batch size
+  batch_size: 32
+  
+  # Number of epochs
+  epochs: 20
+  
+  # Optimizer: "adamw", "adam", "sgd"
+  optimizer: "adamw"
+  
+  # Learning rate
+  learning_rate: 0.0003
+  
+  # Weight decay
+  weight_decay: 0.0001
+  
+  # Learning rate scheduler: "cosine", "step", "none"
+  scheduler: "cosine"
+  
+  # Early stopping
+  early_stopping:
+    enabled: true
+    patience: 5
+    monitor: "val_auc"
+  
+  # Gradient clipping
+  grad_clip: 1.0
+  
+  # Mixed precision training
+  mixed_precision: true
+
+# =============================================================================
+# ADVERSARIAL DISENTANGLEMENT CONFIGURATION
+# =============================================================================
+disentanglement:
+  # Lambda values for gradient reversal
+  lambda_skin_max: 1.0
+  lambda_illum_max: 1.0
+  
+  # Lambda sweep grid (independent sweeps)
+  lambda_sweep:
+    skin_values: [0.0, 0.25, 0.5, 1.0, 2.0]
+    illum_values: [0.0, 0.25, 0.5, 1.0, 2.0]
+  
+  # Adversarial loss weights
+  loss_weights:
+    cls: 1.0
+    skin_adv: 1.0
+    illum_adv: 1.0
+  
+  # Probe configuration
+  probe:
+    # Type: "linear" or "mlp"
+    type: "linear"
+    # Training epochs for probe
+    epochs: 50
+    # Probe learning rate
+    learning_rate: 0.01
+
+# =============================================================================
+# STATISTICAL ANALYSIS CONFIGURATION
+# =============================================================================
+statistics:
+  # Bootstrap iterations
+  bootstrap_iterations: 2000
+  
+  # Permutation test iterations
+  permutation_iterations: 5000
+  
+  # Confidence level
+  confidence_level: 0.95
+  
+  # Multiple comparison correction: "bonferroni", "bh", "none"
+  multiple_comparison_correction: "bonferroni"
+
+# =============================================================================
+# EVALUATION CONFIGURATION
+# =============================================================================
+evaluation:
+  # Metrics to compute
+  metrics:
+    - "accuracy"
+    - "balanced_accuracy"
+    - "precision"
+    - "recall"
+    - "f1"
+    - "roc_auc"
+    - "eer"
+    - "fpr"
+    - "fnr"
+  
+  # Subgroup analysis
+  subgroup_analysis:
+    by_skin_tone: true
+    by_illumination: true
+    cross_table: true
+  
+  # Fairness metrics
+  fairness_metrics:
+    max_min_gap: true
+    worst_group_performance: true
+    fpr_gap: true
+    fnr_gap: true
+    auc_gap: true
+
+# =============================================================================
+# REPRODUCIBILITY CONFIGURATION
+# =============================================================================
+reproducibility:
+  # Random seeds for multi-seed experiments
+  seeds: [42, 123, 2024, 3407, 7777]
+  
+  # Deterministic algorithms (may reduce performance)
+  deterministic: false
+  
+  # Save checkpoints
+  save_checkpoints: true
+  checkpoint_dir: "checkpoints"
+  
+  # Save predictions
+  save_predictions: true
+  
+  # Log experiment metadata
+  log_metadata: true
+
+# =============================================================================
+# OUTPUT CONFIGURATION
+# =============================================================================
+output:
+  # Output directory
+  output_dir: "experiments"
+  
+  # Save formats
+  formats:
+    - "json"
+    - "csv"
+    - "latex"
+  
+  # Generate figures
+  generate_figures: true
+  
+  # Generate tables
+  generate_tables: true
+  
+  # Generate report
+  generate_report: true

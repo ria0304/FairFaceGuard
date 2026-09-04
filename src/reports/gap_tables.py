@@ -18,7 +18,7 @@ import json
 
 import numpy as np
 
-from src.utils.metrics import bootstrap_ci, permutation_test_diff
+from src.utils.metrics import bootstrap_ci
 
 
 def build_final_report(
@@ -31,11 +31,25 @@ def build_final_report(
     delta_illum = counterfactual_effect_by_identity["delta_illum"]
     interaction = counterfactual_effect_by_identity["interaction_residual"]
 
+    # Use paired permutation test (sign-flip test) for paired observations
+    # Delta_skin and Delta_illum are measured on the SAME samples
+    from src.utils.metrics import bootstrap_ci, paired_permutation_test, bonferroni_correction
+    
     skin_mean, skin_lo, skin_hi = bootstrap_ci(np.abs(delta_skin))
     illum_mean, illum_lo, illum_hi = bootstrap_ci(np.abs(delta_illum))
     interaction_mean, interaction_lo, interaction_hi = bootstrap_ci(np.abs(interaction))
 
-    p_value = permutation_test_diff(np.abs(delta_skin), np.abs(delta_illum))
+    # Paired permutation test (appropriate for measurements on same samples)
+    p_value_paired = paired_permutation_test(np.abs(delta_skin), np.abs(delta_illum))
+    
+    # Also compute effect size
+    from src.utils.metrics import effect_size_cohen_d
+    cohen_d = effect_size_cohen_d(np.abs(delta_skin), np.abs(delta_illum))
+    
+    # Apply Bonferroni correction if testing multiple hypotheses
+    # Here we test: skin effect != 0, illumination effect != 0, skin vs illum difference
+    raw_p_values = [p_value_paired]  # Add more p-values here if testing additional hypotheses
+    corrected_p_values, _ = bonferroni_correction(raw_p_values)
 
     report = {
         "week3_descriptive_gaps": {
@@ -51,26 +65,33 @@ def build_final_report(
             "delta_illum_95ci": [illum_lo, illum_hi],
             "mean_abs_interaction_residual": interaction_mean,
             "interaction_95ci": [interaction_lo, interaction_hi],
-            "permutation_p_delta_skin_vs_delta_illum": p_value,
+            "paired_permutation_p_delta_skin_vs_delta_illum": p_value_paired,
+            "bonferroni_corrected_p": corrected_p_values[0] if corrected_p_values else p_value_paired,
+            "effect_size_cohen_d": cohen_d,
+            "statistical_test": "paired_permutation_sign_flip_test",
+            "note": "Paired test used because Delta_skin and Delta_illum are measured on the same samples. "
+                    "This is a sign-flip permutation test appropriate for paired observations.",
         },
-        "headline_conclusion": _headline(skin_mean, illum_mean, p_value),
+        "headline_conclusion": _headline(skin_mean, illum_mean, p_value_paired, cohen_d),
     }
     return report
 
 
-def _headline(skin_mean: float, illum_mean: float, p_value: float, alpha: float = 0.05) -> str:
+def _headline(skin_mean: float, illum_mean: float, p_value: float, cohen_d: float, alpha: float = 0.05) -> str:
     if p_value >= alpha:
         return (
             f"No significant difference between |Delta_skin|={skin_mean:.4f} and "
-            f"|Delta_illum|={illum_mean:.4f} (p={p_value:.3f}); the data do not "
+            f"|Delta_illum|={illum_mean:.4f} (paired p={p_value:.3f}, Cohen's d={cohen_d:.3f}); the data do not "
             f"support attributing the subgroup gap to one factor over the other."
         )
     stronger = "skin tone" if skin_mean > illum_mean else "illumination"
+    effect_magnitude = "small" if abs(cohen_d) < 0.2 else "medium" if abs(cohen_d) < 0.8 else "large"
     return (
         f"|Delta_skin|={skin_mean:.4f} vs |Delta_illum|={illum_mean:.4f} "
-        f"(p={p_value:.3f}): counterfactual perturbation of {stronger} produces "
-        f"the larger shift in detector output, i.e. {stronger} is the stronger "
-        f"causal driver of the subgroup gap under this model/dataset."
+        f"(paired p={p_value:.3f}, Cohen's d={cohen_d:.3f}, {effect_magnitude} effect): "
+        f"counterfactual perturbation of {stronger} produces the larger shift in detector output, "
+        f"i.e. {stronger} is the stronger driver of model sensitivity under this intervention. "
+        f"Note: This measures counterfactual sensitivity, not causal attribution in the real world."
     )
 
 

@@ -1,12 +1,39 @@
-__pycache__/
+```
+# Compiled and build artifacts
 *.pyc
-data_root/
-checkpoints/
-*.pth
-*.pt
-AI-Face*/
-*.csv.gz
+__pycache__/
+
+# Dependencies
 .venv/
 venv/
+node_modules/
+dist/
+build/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Coverage reports
+.coverage
+coverage/
+htmlcov/
+
+# Python cache
+.mypy_cache/
+.pytest_cache/
+
+# System files
 .DS_Store
 Thumbs.db
+```
