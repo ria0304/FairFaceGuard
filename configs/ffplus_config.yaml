@@ -1,0 +1,64 @@
+# FaceForensics++ (FF++) dataset configuration
+#
+# Extends configs/baseline.yaml -- this file holds ONLY what's specific to
+# FF++ (video source paths, extraction/manipulation parameters). Everything
+# else (model, training, disentanglement, statistics) is inherited from
+# baseline.yaml unchanged. See DATASET_SELECTION.md for why FF++ replaced
+# AI-Face as the primary dataset.
+#
+# Usage:
+#   python -m src.data.ffplus_adapter \
+#       --ffpp_root <dataset.ffpp_root below> \
+#       --output_dir <dataset.data_root below> \
+#       --manipulation <dataset.manipulation> \
+#       --compression <dataset.compression> \
+#       --frames_per_video <dataset.frames_per_video>
+
+extends: "baseline.yaml"
+
+experiment:
+  name: "ffplus_experiment"
+  description: "Baseline deepfake detector on FaceForensics++ (real videos, real manipulations)"
+
+dataset:
+  type: "ffpp"
+
+  # Root of the raw FF++ download (request access at
+  # https://github.com/ondyari/FaceForensics). NOT the same as data_root --
+  # this is the pre-extraction video root; data_root (in baseline.yaml) is
+  # where the adapter WRITES frames/, labels.csv, annotations.csv.
+  ffpp_root: null  # e.g. /data/ff++
+
+  # Which manipulation method(s) to include. "all" pools Deepfakes,
+  # Face2Face, FaceSwap, and NeuralTextures (recommended for the primary
+  # run -- more manipulation diversity generalizes better).
+  manipulation: "all"  # one of: Deepfakes, Face2Face, FaceSwap, NeuralTextures, all
+
+  # Compression level. c23 (light compression) matches most published FF++
+  # baselines and is a reasonable realism/dataset-size tradeoff. Use "raw"
+  # only if disk space and compute allow it; "c40" is the hardest/most
+  # compressed setting, useful as a robustness stress test later but not
+  # the primary run.
+  compression: "c23"  # one of: raw, c23, c40
+
+  # Frames sampled per video (evenly spaced). 10 balances per-video temporal
+  # diversity against total dataset size -- FF++ has ~1000 real + ~4000 fake
+  # videos, so 10 frames/video already yields tens of thousands of face crops.
+  frames_per_video: 10
+
+  # Face crop resolution written to frames/<face_id>.png. Matches
+  # model.image_resolution in baseline.yaml -- keep these in sync if you
+  # change one.
+  face_size: 380
+
+  # Optional: subsample N videos for a fast first pass before committing to
+  # a full run (recommended -- FF++ is large; verify the adapter + ITA
+  # annotation pipeline on ~50-200 videos first).
+  sample_n: null
+
+  # Identity key for src/data/identity_split.py: FF++'s natural identity is
+  # the SOURCE video_id (the real actor whose face is manipulated). The
+  # ffplus_adapter.py face_id format ("<video_id>__f<frame>_<manip>") makes
+  # the default "face_id_prefix" grouping already correct -- no extra flag
+  # needed at split time.
+  identity_grouping: "face_id_prefix"
