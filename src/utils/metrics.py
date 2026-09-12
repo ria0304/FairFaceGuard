@@ -1,4 +1,4 @@
-="""Shared evaluation metrics used across the baseline (Week 3), disentanglement
+"""Shared evaluation metrics used across the baseline (Week 3), disentanglement
 (Week 4), and reporting (Week 5) stages."""
 
 from __future__ import annotations
@@ -73,7 +73,7 @@ def subgroup_metric_table(
         }
 
     if results:
-        for metric in ("accuracy", "auc", "eer", "fpr", "fnr"):
+        for metric in ("accuracy", "auc", "eer", "fpr", "fnr", "recall", "precision", "f1"):
             vals = [v[metric] for v in results.values() if not np.isnan(v.get(metric, np.nan))]
             if len(vals) >= 2:
                 results.setdefault("__gap__", {})[metric] = max(vals) - min(vals)
