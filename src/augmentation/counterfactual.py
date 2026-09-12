@@ -44,6 +44,14 @@ class CounterfactualSet:
     both: np.ndarray
     validation: dict
 
+    @property
+    def accepted(self) -> bool:
+        return bool(self.validation.get("accepted", False))
+
+    @property
+    def reject_reasons(self) -> list[str]:
+        return list(self.validation.get("reject_reasons", []))
+
 
 # --------------------------------------------------------------------------
 # Classical Lab-space backend
@@ -128,7 +136,7 @@ def generate_counterfactual_set(
     )
 
     validation = _validate_counterfactuals(
-        image_bgr, skin_only, illum_only, ita_delta
+        image_bgr, skin_only, illum_only, both, ita_delta
     )
 
     return CounterfactualSet(
@@ -152,52 +160,122 @@ def _illuminant_of(image_bgr: np.ndarray) -> np.ndarray:
     return estimate_illuminant_gray_world(image_bgr)
 
 
+def validate_counterfactual_images(
+    original: np.ndarray,
+    skin_only: np.ndarray,
+    illum_only: np.ndarray,
+    both: np.ndarray,
+    intended_ita_delta: float = 15.0,
+    ita_tolerance: float = 8.0,
+    illum_tolerance_frac: float = 0.15,
+) -> dict:
+    """Public entry point for the validation gate, for callers (e.g. the
+    unified counterfactual experiment runner) that already have the four
+    images on disk/in memory and don't want to regenerate them from
+    scratch. Same checks as `generate_counterfactual_set`'s internal gate."""
+    return _validate_counterfactuals(
+        original, skin_only, illum_only, both,
+        intended_ita_delta, ita_tolerance, illum_tolerance_frac,
+    )
+
+
 def _validate_counterfactuals(
     original: np.ndarray,
     skin_only: np.ndarray,
     illum_only: np.ndarray,
+    both: np.ndarray,
     intended_ita_delta: float,
     ita_tolerance: float = 8.0,
     illum_tolerance_frac: float = 0.15,
 ) -> dict:
-    """Manipulation check (methodology Section 3.1/3.2):
-        - skin_only should move ITA by ~intended_ita_delta and leave the
-          illuminant estimate roughly unchanged.
-        - illum_only should leave ITA roughly unchanged and move the
-          illuminant estimate.
-    Returns pass/fail flags plus the measured residual coupling, which
-    should be reported as a bounded source of error in the paper."""
+    """Counterfactual validation gate (methodology Section 3.1/3.2).
+
+    Verifies each generated counterfactual actually changes the INTENDED
+    factor only, for all four arms of the factorial set:
+        - skin_only  -> skin-tone (ITA) changes, illumination stays stable
+        - illum_only -> illumination changes, skin-tone (ITA) stays stable
+        - both       -> both change
+    Any sample whose unintended-factor change is too large (or whose
+    intended-factor change is too small) is flagged and excluded via
+    `accepted=False` / `reject_reasons`, rather than silently kept.
+    """
     ita_orig = _ita_of(original)
     ita_skin = _ita_of(skin_only)
     ita_illum = _ita_of(illum_only)
+    ita_both = _ita_of(both)
 
     illum_orig = _illuminant_of(original)
     illum_skin = _illuminant_of(skin_only)
     illum_illum = _illuminant_of(illum_only)
+    illum_both = _illuminant_of(both)
 
-    measured_ita_delta = ita_skin - ita_orig
-    ita_check_pass = abs(measured_ita_delta - intended_ita_delta) < ita_tolerance
-    skin_leak_into_illum = float(
-        np.linalg.norm(illum_skin - illum_orig) / (np.linalg.norm(illum_orig) + 1e-6)
-    )
+    def illum_shift_frac(illum_variant: np.ndarray) -> float:
+        return float(
+            np.linalg.norm(illum_variant - illum_orig) / (np.linalg.norm(illum_orig) + 1e-6)
+        )
 
+    # --- skin_only: intended = ITA shift, unintended = illuminant shift ---
+    measured_ita_delta_skin = ita_skin - ita_orig
+    skin_intended_ok = abs(measured_ita_delta_skin - intended_ita_delta) < ita_tolerance
+    skin_leak_into_illum = illum_shift_frac(illum_skin)
+    skin_unintended_ok = skin_leak_into_illum < illum_tolerance_frac
+    skin_only_accepted = bool(skin_intended_ok and skin_unintended_ok)
+
+    # --- illum_only: intended = illuminant shift, unintended = ITA shift ---
+    illum_shift_magnitude = illum_shift_frac(illum_illum)
+    illum_intended_ok = illum_shift_magnitude > illum_tolerance_frac
     illum_leak_into_ita = abs(ita_illum - ita_orig)
-    illum_shift_magnitude = float(
-        np.linalg.norm(illum_illum - illum_orig) / (np.linalg.norm(illum_orig) + 1e-6)
-    )
+    illum_unintended_ok = illum_leak_into_ita < ita_tolerance
+    illum_only_accepted = bool(illum_intended_ok and illum_unintended_ok)
+
+    # --- both: BOTH factors are intended to change here ---
+    measured_ita_delta_both = ita_both - ita_orig
+    both_ita_ok = abs(measured_ita_delta_both - intended_ita_delta) < ita_tolerance
+    both_illum_shift_magnitude = illum_shift_frac(illum_both)
+    both_illum_ok = both_illum_shift_magnitude > illum_tolerance_frac
+    both_accepted = bool(both_ita_ok and both_illum_ok)
+
+    reject_reasons: list[str] = []
+    if not skin_intended_ok:
+        reject_reasons.append("skin_only: intended ITA shift not achieved")
+    if not skin_unintended_ok:
+        reject_reasons.append("skin_only: illuminant leaked too much (unintended change)")
+    if not illum_intended_ok:
+        reject_reasons.append("illum_only: intended illuminant shift not achieved")
+    if not illum_unintended_ok:
+        reject_reasons.append("illum_only: ITA leaked too much (unintended change)")
+    if not both_ita_ok:
+        reject_reasons.append("both: ITA did not shift as intended")
+    if not both_illum_ok:
+        reject_reasons.append("both: illuminant did not shift as intended")
+
+    # A face's whole counterfactual set is only usable for the Week-4 causal
+    # comparison if every arm passes its own manipulation check.
+    accepted = skin_only_accepted and illum_only_accepted and both_accepted
 
     return {
-        "measured_ita_delta_skin_only": round(measured_ita_delta, 2),
-        "ita_manipulation_check_pass": bool(ita_check_pass),
+        "measured_ita_delta_skin_only": round(measured_ita_delta_skin, 2),
+        "ita_manipulation_check_pass": skin_intended_ok,
         "residual_illuminant_coupling_in_skin_shift": round(skin_leak_into_illum, 4),
+        "skin_only_accepted": skin_only_accepted,
         "residual_ita_coupling_in_illum_shift": round(illum_leak_into_ita, 4),
-        "illum_manipulation_check_pass": bool(
-            illum_shift_magnitude > illum_tolerance_frac and illum_leak_into_ita < ita_tolerance
-        ),
+        "illum_manipulation_check_pass": illum_intended_ok,
+        "illum_only_accepted": illum_only_accepted,
+        "measured_ita_delta_both": round(measured_ita_delta_both, 2),
+        "both_illum_shift_magnitude": round(both_illum_shift_magnitude, 4),
+        "both_accepted": both_accepted,
+        "accepted": accepted,
+        "reject_reasons": reject_reasons,
     }
 
 
 if __name__ == "__main__":
+    import logging
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+    logger = logging.getLogger(__name__)
+
     fake_face = np.random.randint(80, 180, size=(256, 256, 3), dtype=np.uint8)
     cf = generate_counterfactual_set(fake_face, face_id="demo_0001")
-    print(cf.validation)
+    logger.info(cf.validation)
+    logger.info("accepted=%s reject_reasons=%s", cf.accepted, cf.reject_reasons)
