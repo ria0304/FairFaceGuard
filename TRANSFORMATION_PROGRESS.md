@@ -23,6 +23,10 @@ The FairFaceGuard repository has been transformed from a research prototype into
 | `src/experiments/ablation_framework.py` | Automated ablation study framework | ✅ Implemented |
 | `src/controls/__init__.py` | Package initialization | ✅ Created |
 | `src/experiments/__init__.py` | Package initialization | ✅ Created |
+| `src/reports/disentanglement_calculator.py` | Aggregate-metric counterfactual calculator: ΔAUC_skin/lighting/combined, Performance_drop_skin/lighting/combined, + matching TPR/FPR/EER changes | ✅ Implemented & smoke-tested |
+| `src/reports/statistical_validation.py` | Pre-specified statistical test plan (fixed before results are seen): auto-reports p-value, CI, effect size, and a significance decision (with multiple-comparison correction) for every registered comparison | ✅ Implemented & smoke-tested |
+| `src/reports/generate_figures.py` | Automatic figure generation: ROC by group, AUC by group, TPR/FPR by group, EER by group, Original-vs-skin/lighting/combined ROC overlays, performance-drop comparison chart, counterfactual-effects headline chart | ✅ Implemented & smoke-tested |
+| `src/reports/build_results_package.py` | Single-script final results package + reproducibility bundle: writes `results/{baseline,subgroup,counterfactual}_metrics.csv`, `statistical_tests.csv`, `predictions.csv`, `dataset_split.csv`, `experiment_config.json` (seed + full config), a copied model checkpoint, and `figures/{subgroup_auc,tpr_fpr_gap,eer_by_group,counterfactual_effects}.png` | ✅ Implemented & smoke-tested |
 
 ### Files Modified (FIXED)
 
