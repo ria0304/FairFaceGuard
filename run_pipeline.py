@@ -27,14 +27,29 @@ from torch.utils.data import DataLoader
 
 from src.annotation.ita_fitzpatrick import annotate_face
 from src.augmentation.counterfactual import generate_counterfactual_set
+from src.augmentation.validation_report import ValidationTracker, print_validation_summary
 from src.data.datasets import AnnotatedFaceDataset, CounterfactualDataset, collate_counterfactual_batch
 from src.detector.baseline_model import BaselineDeepfakeDetector
 from src.detector.train_baseline import train_baseline
 from src.detector.subgroup_eval import run_subgroup_eval, print_gap_report
+from src.reports.week3_metric_report import build_week3_report, print_report as print_week3_report, save_report as save_week3_report
 from src.disentangle.train import run_independent_sweep
 from src.disentangle.probing import run_leakage_report
 from src.disentangle.counterfactual_eval import counterfactual_effect, aggregate_by_identity
 from src.reports.gap_tables import build_final_report, save_report
+from src.reports.disentanglement_calculator import (
+    score_counterfactual_conditions,
+    run_disentanglement_calculator,
+    print_disentanglement_report,
+    save_disentanglement_report,
+)
+from src.reports.statistical_validation import (
+    run_pre_specified_test_plan,
+    print_statistical_report,
+    save_statistical_report,
+)
+from src.reports.generate_figures import generate_all_required_figures
+from src.reports.build_results_package import build_final_results_package
 from src.utils.seed import set_seed
 
 
@@ -57,15 +72,21 @@ def stage_annotate(data_root: str) -> None:
     print(f"Wrote {len(df)} annotations to {out_path}")
 
 
-def stage_augment(data_root: str) -> None:
-    """Week 2: generate counterfactual sets for every annotated frame."""
+def stage_augment(data_root: str) -> dict:
+    """Week 2: generate counterfactual sets for every annotated frame, run
+    the counterfactual validation gate on each one, and write the
+    rejection/exclusion-rate report required before these sets are trusted
+    downstream (Week 4 causal test only uses accepted sets)."""
     annotations = pd.read_csv(os.path.join(data_root, "annotations.csv"))
     out_root = os.path.join(data_root, "counterfactuals")
+    tracker = ValidationTracker()
+
     for _, row in annotations.iterrows():
         face_id = row["face_id"]
         img_path = os.path.join(data_root, "frames", f"{face_id}.png")
         image = cv2.imread(img_path)
         cf = generate_counterfactual_set(image, face_id)
+        tracker.add(cf)
 
         face_dir = os.path.join(out_root, face_id)
         os.makedirs(face_dir, exist_ok=True)
@@ -74,10 +95,17 @@ def stage_augment(data_root: str) -> None:
         cv2.imwrite(os.path.join(face_dir, "illum_only.png"), cf.illum_only)
         cv2.imwrite(os.path.join(face_dir, "both.png"), cf.both)
 
-        if not cf.validation["ita_manipulation_check_pass"]:
-            print(f"  [WARN] {face_id}: skin-tone counterfactual failed manipulation check: {cf.validation}")
+        if not cf.accepted:
+            print(f"  [REJECTED] {face_id}: {cf.reject_reasons}")
 
     print(f"Wrote counterfactual sets to {out_root}")
+
+    summary = tracker.save(
+        csv_path=os.path.join(data_root, "counterfactual_validation.csv"),
+        summary_json_path=os.path.join(data_root, "counterfactual_validation_summary.json"),
+    )
+    print_validation_summary(summary)
+    return summary
 
 
 def stage_baseline(data_root: str, epochs: int = 20) -> BaselineDeepfakeDetector:
@@ -96,6 +124,14 @@ def stage_baseline(data_root: str, epochs: int = 20) -> BaselineDeepfakeDetector
 
     results = run_subgroup_eval(model, test_loader)
     print_gap_report(results)
+
+    # One evaluation script, one command: produces every Week-3 metric
+    # (ROC-AUC, accuracy, precision, recall/TPR, F1, FPR, FNR, EER,
+    # delta_AUC / TPR gap / FPR gap / EER by skin-tone group) automatically.
+    week3_report = build_week3_report(model, test_loader)
+    print_week3_report(week3_report)
+    save_week3_report(week3_report, os.path.join(data_root, "week3_metric_report.json"))
+
     return model, results
 
 
@@ -130,11 +166,40 @@ def stage_disentangle(data_root: str, baseline_model: BaselineDeepfakeDetector, 
         all_effects[k] = np.concatenate(all_effects[k])
 
     effect_by_identity = aggregate_by_identity(all_effects)
-    return {"sweep_results": sweep_results, "leakage_results": leakage_results, "effect_by_identity": effect_by_identity}
+
+    # Item 4: aggregate-metric disentanglement calculator (ΔAUC_skin /
+    # ΔAUC_lighting / ΔAUC_combined, Performance_drop_*, and the
+    # corresponding TPR/FPR/EER changes), scored on the SAME frozen
+    # baseline and the SAME counterfactual sets used for the per-sample
+    # Delta_skin/Delta_illum effect above.
+    fake_label_lookup = dict(
+        zip(
+            train_ds.df["face_id"].tolist() + val_ds.df["face_id"].tolist(),
+            train_ds.df["fake_label"].tolist() + val_ds.df["fake_label"].tolist(),
+        )
+    )
+    cf_loader_for_scoring = DataLoader(cf_ds, batch_size=32, collate_fn=collate_counterfactual_batch)
+    scoring = score_counterfactual_conditions(baseline_model, cf_loader_for_scoring, fake_label_lookup)
+    disentanglement_report = run_disentanglement_calculator(scoring["y_true"], scoring["scores"])
+    print_disentanglement_report(disentanglement_report)
+    save_disentanglement_report(
+        disentanglement_report, os.path.join(data_root, "disentanglement_result_report.json")
+    )
+
+    return {
+        "sweep_results": sweep_results,
+        "leakage_results": leakage_results,
+        "effect_by_identity": effect_by_identity,
+        "disentanglement_report": disentanglement_report,
+        "scores_by_condition": scoring["scores"],
+        "cf_y_true": scoring["y_true"],
+    }
 
 
-def stage_report(data_root: str, subgroup_results: dict, week4_results: dict) -> None:
-    """Week 5: aggregate everything into the final paper-ready report."""
+def stage_report(data_root: str, subgroup_results: dict, week4_results: dict, seed: int = 42, config: dict | None = None) -> None:
+    """Week 5: aggregate everything into the final paper-ready report, run
+    the pre-specified statistical validation plan (item 5), and generate
+    every required figure (item 6)."""
     report = build_final_report(
         subgroup_eval_results=subgroup_results,
         sweep_results=week4_results["sweep_results"],
@@ -144,15 +209,70 @@ def stage_report(data_root: str, subgroup_results: dict, week4_results: dict) ->
     save_report(report, os.path.join(data_root, "final_report.json"))
     print(report["headline_conclusion"])
 
+    # Item 5: statistics automatically report p-value / CI / effect size /
+    # significance decision, against the plan fixed in
+    # src/reports/statistical_validation.py -- never chosen post hoc.
+    disentanglement_report = week4_results["disentanglement_report"]
+    stats_report = run_pre_specified_test_plan(
+        effect_by_identity=week4_results["effect_by_identity"],
+        per_condition_raw=disentanglement_report["_per_condition_raw"],
+    )
+    print_statistical_report(stats_report)
+    save_statistical_report(stats_report, os.path.join(data_root, "statistical_validation_report.json"))
+
+    # Item 6: every required figure, written to <data_root>/figures/.
+    generate_all_required_figures(
+        output_dir=os.path.join(data_root, "figures"),
+        y_true=subgroup_results.get("_y_true"),
+        y_score=subgroup_results.get("_y_score"),
+        skin_bins=subgroup_results.get("_skin_bins"),
+        skin_names={0: "I", 1: "II", 2: "III", 3: "IV", 4: "V", 5: "VI"},
+        per_skin_table=subgroup_results["by_skin_tone"],
+        disentanglement_report=disentanglement_report,
+        scores_by_condition=week4_results["scores_by_condition"],
+        illum_bins=subgroup_results.get("_illum_bins"),
+        illum_names={0: "very_dark", 1: "dark", 2: "mid", 3: "bright", 4: "very_bright"},
+        per_illum_table=subgroup_results.get("by_illumination"),
+    )
+
+    # Items 7 & 8: one call assembles the whole reproducibility bundle +
+    # final results/ package (metrics CSVs, statistical-tests CSV,
+    # predictions CSV, dataset split, config/seeds, checkpoint, figures).
+    labels_with_splits_path = os.path.join(data_root, "labels_with_splits.csv")
+    build_final_results_package(
+        output_dir=os.path.join(data_root, "results"),
+        seed=seed,
+        config=config or {},
+        week3_report={"overall": _week3_overall_from_report(data_root)},
+        subgroup_results=subgroup_results,
+        disentanglement_report=disentanglement_report,
+        stats_report=stats_report,
+        effect_by_identity=week4_results["effect_by_identity"],
+        checkpoint_path=os.path.join(data_root, "baseline_model.pt"),
+        dataset_split=labels_with_splits_path if os.path.exists(labels_with_splits_path) else None,
+    )
+
+
+def _week3_overall_from_report(data_root: str) -> dict:
+    """Reads back the already-saved week3_metric_report.json's "overall"
+    block so build_final_results_package doesn't need the report threaded
+    through every call site."""
+    import json
+
+    path = os.path.join(data_root, "week3_metric_report.json")
+    with open(path) as f:
+        return json.load(f)["overall"]
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_root", required=True)
     parser.add_argument("--stage", default="all", choices=["all", "annotate", "augment", "baseline", "disentangle", "report"])
     parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--seed", type=int, default=42, help="Random seed, saved into experiment_config.json for reproducibility.")
     args = parser.parse_args()
 
-    set_seed(42)
+    set_seed(args.seed)
 
     if args.stage in ("all", "annotate"):
         stage_annotate(args.data_root)
@@ -171,4 +291,10 @@ if __name__ == "__main__":
         week4_results = stage_disentangle(args.data_root, baseline_model)
 
     if args.stage in ("all", "report"):
-        stage_report(args.data_root, subgroup_results, week4_results)
+        experiment_config = {
+            "seed": args.seed,
+            "epochs": args.epochs,
+            "data_root": args.data_root,
+            "stage_run": args.stage,
+        }
+        stage_report(args.data_root, subgroup_results, week4_results, seed=args.seed, config=experiment_config)
