@@ -31,7 +31,7 @@ def run_subgroup_eval(
     the 2D cross table (skin x illum -> EER), plus overall max-min gaps."""
     model.eval().to(device)
 
-    y_true, y_score, skin_bins, illum_bins = [], [], [], []
+    y_true, y_score, skin_bins, illum_bins, face_ids = [], [], [], [], []
     for batch in test_loader:
         x = batch["image"].to(device)
         p_fake = model.predict_proba(x).cpu().numpy()
@@ -39,6 +39,8 @@ def run_subgroup_eval(
         y_score.append(p_fake)
         skin_bins.append(batch["skin_bin"].numpy())
         illum_bins.append(batch["illum_bin"].numpy())
+        if "face_id" in batch:
+            face_ids.extend(batch["face_id"])
 
     y_true = np.concatenate(y_true)
     y_score = np.concatenate(y_score)
@@ -49,7 +51,21 @@ def run_subgroup_eval(
     by_illum = subgroup_metric_table(y_true, y_score, illum_bins, ILLUM_BIN_NAMES)
     cross = _cross_eer_table(y_true, y_score, skin_bins, illum_bins)
 
-    return {"by_skin_tone": by_skin, "by_illumination": by_illum, "cross_table_eer": cross}
+    return {
+        "by_skin_tone": by_skin,
+        "by_illumination": by_illum,
+        "cross_table_eer": cross,
+        # Raw arrays, underscore-prefixed so they're clearly "extra" and
+        # don't collide with the printed report tables above. Consumed by
+        # src/reports/generate_figures.py to draw ROC curves, and by
+        # src/reports/build_results_package.py for predictions.csv,
+        # without re-running the model.
+        "_y_true": y_true,
+        "_y_score": y_score,
+        "_skin_bins": skin_bins,
+        "_illum_bins": illum_bins,
+        "_face_ids": face_ids if face_ids else None,
+    }
 
 
 def _cross_eer_table(
