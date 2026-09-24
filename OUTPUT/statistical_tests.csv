@@ -1,0 +1,6 @@
+comparison,description,skipped,point_estimate,ci_low,ci_high,p_value,corrected_p_value,effect_size,significant_after_correction
+delta_skin_nonzero,Is the counterfactual skin-tone effect (|Delta_skin|) different from zero?,False,0.0009430136997252703,0.00030360528035089374,0.0018331925384700298,,,0.0009430136997252703,True
+delta_illum_nonzero,Is the counterfactual illumination effect (|Delta_illum|) different from zero?,False,0.0010123943211510777,0.0002935527008958161,0.001986244460567832,,,0.0010123943211510777,True
+delta_skin_vs_delta_illum,Does |Delta_skin| differ from |Delta_illum| on the same identities? (the headline causal comparison: which factor drives the gap more),False,-6.938062142580748e-05,-0.0010555341141298413,0.0009470401564612985,0.8818,1.0,-0.0034353453665971756,False
+performance_drop_skin_vs_lighting,"Does per-sample correctness under skin_only differ from correctness under illum_only, on the same identities?",False,0.0004555808656037108,-0.0009111617312072893,0.0018223234624145787,1.0,1.0,0.017430229297229802,False
+performance_drop_skin_vs_combined,"Does per-sample correctness under skin_only differ from correctness under both (combined), on the same identities?",False,-0.0004555808656035998,-0.001366742596810934,0.0,1.0,1.0,-0.03018545562364613,False

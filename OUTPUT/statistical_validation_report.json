@@ -1,0 +1,98 @@
+{
+  "alpha": 0.05,
+  "multiple_comparison_correction": "bonferroni",
+  "n_bootstrap": 2000,
+  "n_permutations": 5000,
+  "comparisons": {
+    "delta_skin_nonzero": {
+      "point_estimate": 0.0009430136997252703,
+      "ci_95": [
+        0.00030360528035089374,
+        0.0018331925384700298
+      ],
+      "p_value": null,
+      "effect_size": 0.0009430136997252703,
+      "decision_rule": "95% CI excludes 0",
+      "raw_significant": true,
+      "skipped": false,
+      "name": "delta_skin_nonzero",
+      "description": "Is the counterfactual skin-tone effect (|Delta_skin|) different from zero?",
+      "significant_after_correction": true,
+      "bonferroni_family_size": 3,
+      "bonferroni_corrected_p": 1.0,
+      "corrected_p_value": 1.0
+    },
+    "delta_illum_nonzero": {
+      "point_estimate": 0.0010123943211510777,
+      "ci_95": [
+        0.0002935527008958161,
+        0.001986244460567832
+      ],
+      "p_value": null,
+      "effect_size": 0.0010123943211510777,
+      "decision_rule": "95% CI excludes 0",
+      "raw_significant": true,
+      "skipped": false,
+      "name": "delta_illum_nonzero",
+      "description": "Is the counterfactual illumination effect (|Delta_illum|) different from zero?",
+      "significant_after_correction": true,
+      "bonferroni_family_size": 3,
+      "bonferroni_corrected_p": 1.0,
+      "corrected_p_value": 1.0
+    },
+    "delta_skin_vs_delta_illum": {
+      "point_estimate": -6.938062142580748e-05,
+      "ci_95_of_difference": [
+        -0.0010555341141298413,
+        0.0009470401564612985
+      ],
+      "p_value": 0.8818,
+      "effect_size_cohen_d": -0.0034353453665971756,
+      "decision_rule": "paired permutation p < 0.05 (before correction)",
+      "raw_significant": false,
+      "skipped": false,
+      "name": "delta_skin_vs_delta_illum",
+      "description": "Does |Delta_skin| differ from |Delta_illum| on the same identities? (the headline causal comparison: which factor drives the gap more)",
+      "corrected_p_value": 1.0,
+      "significant_after_correction": false,
+      "bonferroni_family_size": 3,
+      "bonferroni_corrected_p": 1.0
+    },
+    "performance_drop_skin_vs_lighting": {
+      "point_estimate": 0.0004555808656037108,
+      "ci_95_of_difference": [
+        -0.0009111617312072893,
+        0.0018223234624145787
+      ],
+      "p_value": 1.0,
+      "effect_size_cohen_d": 0.017430229297229802,
+      "decision_rule": "paired permutation p < 0.05 (before correction)",
+      "raw_significant": false,
+      "skipped": false,
+      "name": "performance_drop_skin_vs_lighting",
+      "description": "Does per-sample correctness under skin_only differ from correctness under illum_only, on the same identities?",
+      "corrected_p_value": 1.0,
+      "significant_after_correction": false,
+      "bonferroni_family_size": 3,
+      "bonferroni_corrected_p": 1.0
+    },
+    "performance_drop_skin_vs_combined": {
+      "point_estimate": -0.0004555808656035998,
+      "ci_95_of_difference": [
+        -0.001366742596810934,
+        0.0
+      ],
+      "p_value": 1.0,
+      "effect_size_cohen_d": -0.03018545562364613,
+      "decision_rule": "paired permutation p < 0.05 (before correction)",
+      "raw_significant": false,
+      "skipped": false,
+      "name": "performance_drop_skin_vs_combined",
+      "description": "Does per-sample correctness under skin_only differ from correctness under both (combined), on the same identities?",
+      "corrected_p_value": 1.0,
+      "significant_after_correction": false,
+      "bonferroni_family_size": 3,
+      "bonferroni_corrected_p": 1.0
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "overall": {
+    "n": 357,
+    "roc_auc": 0.9942363112391931,
+    "accuracy": 0.9859943977591037,
+    "precision": 0.8571428571428571,
+    "recall_tpr": 0.6,
+    "f1": 0.7058823529411765,
+    "fpr": 0.002881844380403458,
+    "fnr": 0.4,
+    "eer": 0.010086455331412104
+  },
+  "by_skin_tone": {
+    "I": {
+      "n": 165,
+      "accuracy": 0.9757575757575757,
+      "auc": 0.9992877492877493,
+      "eer": 0.003205128205128205,
+      "precision": 1.0,
+      "recall": 0.5555555555555556,
+      "f1": 0.7142857142857143,
+      "fpr": 0.0,
+      "fnr": 0.4444444444444444
+    },
+    "V": {
+      "n": 101,
+      "accuracy": 1.0,
+      "auc": 1.0,
+      "eer": 0.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fpr": 0.0,
+      "fnr": 0.0
+    }
+  },
+  "by_illumination": {
+    "dark": {
+      "n": 112,
+      "accuracy": 0.9642857142857143,
+      "auc": 1.0,
+      "eer": 0.0,
+      "precision": 1.0,
+      "recall": 0.6,
+      "f1": 0.75,
+      "fpr": 0.0,
+      "fnr": 0.4
+    }
+  },
+  "gaps_by_skin_tone": {
+    "delta_auc": 0.0007122507122506727,
+    "tpr_gap": 0.4444444444444444,
+    "fpr_gap": 0.0,
+    "fnr_gap": 0.4444444444444444,
+    "eer_gap": 0.003205128205128205,
+    "accuracy_gap": 0.024242424242424288
+  },
+  "gaps_by_illumination": {
+    "delta_auc": NaN,
+    "tpr_gap": NaN,
+    "fpr_gap": NaN,
+    "fnr_gap": NaN,
+    "eer_gap": NaN,
+    "accuracy_gap": NaN
+  },
+  "eer_by_skin_tone_group": {
+    "I": 0.003205128205128205,
+    "V": 0.0
+  },
+  "cross_table_eer_skin_x_illum": {
+    "I": {
+      "very_dark": null,
+      "dark": 0.0,
+      "mid": null,
+      "bright": null,
+      "very_bright": null
+    },
+    "II": {
+      "very_dark": null,
+      "dark": null,
+      "mid": null,
+      "bright": null,
+      "very_bright": null
+    },
+    "III": {
+      "very_dark": null,
+      "dark": null,
+      "mid": null,
+      "bright": null,
+      "very_bright": null
+    },
+    "IV": {
+      "very_dark": null,
+      "dark": null,
+      "mid": null,
+      "bright": null,
+      "very_bright": null
+    },
+    "V": {
+      "very_dark": null,
+      "dark": 0.0,
+      "mid": null,
+      "bright": null,
+      "very_bright": null
+    },
+    "VI": {
+      "very_dark": null,
+      "dark": null,
+      "mid": null,
+      "bright": null,
+      "very_bright": null
+    }
+  }
+}

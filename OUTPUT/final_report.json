@@ -1,0 +1,122 @@
+{
+  "week3_descriptive_gaps": {
+    "by_skin_tone": {
+      "accuracy": 0.024242424242424288,
+      "auc": 0.0007122507122506727,
+      "eer": 0.003205128205128205,
+      "fpr": 0.0,
+      "fnr": 0.4444444444444444,
+      "recall": 0.4444444444444444,
+      "precision": 0.0,
+      "f1": 0.2857142857142857
+    },
+    "by_illumination": {}
+  },
+  "week4_accuracy_vs_invariance_frontiers": {
+    "skin_frontier": [
+      {
+        "lambda_skin": 0.0,
+        "lambda_illum": 0.0,
+        "fake_acc": 0.990625,
+        "skin_probe_acc": 0.559375,
+        "illum_probe_acc": 0.19375
+      },
+      {
+        "lambda_skin": 0.25,
+        "lambda_illum": 0.0,
+        "fake_acc": 0.95,
+        "skin_probe_acc": 0.5625,
+        "illum_probe_acc": 0.165625
+      },
+      {
+        "lambda_skin": 0.5,
+        "lambda_illum": 0.0,
+        "fake_acc": 0.96875,
+        "skin_probe_acc": 0.565625,
+        "illum_probe_acc": 0.15625
+      },
+      {
+        "lambda_skin": 1.0,
+        "lambda_illum": 0.0,
+        "fake_acc": 0.978125,
+        "skin_probe_acc": 0.565625,
+        "illum_probe_acc": 0.1875
+      },
+      {
+        "lambda_skin": 2.0,
+        "lambda_illum": 0.0,
+        "fake_acc": 0.975,
+        "skin_probe_acc": 0.5625,
+        "illum_probe_acc": 0.1625
+      }
+    ],
+    "illum_frontier": [
+      {
+        "lambda_skin": 0.0,
+        "lambda_illum": 0.0,
+        "fake_acc": 0.990625,
+        "skin_probe_acc": 0.559375,
+        "illum_probe_acc": 0.19375
+      },
+      {
+        "lambda_skin": 0.0,
+        "lambda_illum": 0.25,
+        "fake_acc": 0.96875,
+        "skin_probe_acc": 0.5625,
+        "illum_probe_acc": 0.165625
+      },
+      {
+        "lambda_skin": 0.0,
+        "lambda_illum": 0.5,
+        "fake_acc": 0.978125,
+        "skin_probe_acc": 0.5625,
+        "illum_probe_acc": 0.215625
+      },
+      {
+        "lambda_skin": 0.0,
+        "lambda_illum": 1.0,
+        "fake_acc": 1.0,
+        "skin_probe_acc": 0.5625,
+        "illum_probe_acc": 0.165625
+      },
+      {
+        "lambda_skin": 0.0,
+        "lambda_illum": 2.0,
+        "fake_acc": 0.959375,
+        "skin_probe_acc": 0.5625,
+        "illum_probe_acc": 0.159375
+      }
+    ]
+  },
+  "week4_representation_leakage": {
+    "skin_probe_accuracy": 0.5625,
+    "illum_probe_accuracy": 0.1875,
+    "note": "Higher = more leakage of that factor into the frozen baseline's representation."
+  },
+  "week4_causal_counterfactual_effect": {
+    "mean_abs_delta_skin": 0.0009430136997252703,
+    "delta_skin_95ci": [
+      0.00030360528035089374,
+      0.0018331925384700298
+    ],
+    "mean_abs_delta_illum": 0.0010123943211510777,
+    "delta_illum_95ci": [
+      0.0002935527008958161,
+      0.001986244460567832
+    ],
+    "mean_abs_interaction_residual": 0.001358429086394608,
+    "interaction_95ci": [
+      0.00043889626977033913,
+      0.0025770512875169516
+    ],
+    "paired_permutation_p_delta_skin_vs_delta_illum": 0.8818,
+    "bonferroni_corrected_p": 1.0,
+    "effect_size_cohen_d": -0.0034353453665971756,
+    "statistical_test": "paired_permutation_sign_flip_test",
+    "note": "Paired test used because Delta_skin and Delta_illum are measured on the same samples. This is a sign-flip permutation test appropriate for paired observations.",
+    "bonferroni_family_size": 3,
+    "headline_conclusion": "No significant difference between |Delta_skin|=0.0009 and |Delta_illum|=0.0010 (paired p=0.882, Bonferroni corr. p=1.0 over m=3 comparisons; data do not support attributing the gap to one factor over the other).",
+    "headline": "No significant difference between |Delta_skin|=0.0009 and |Delta_illum|=0.0010 (paired p=0.882, Bonferroni corr. p=1.0 over m=3 comparisons; data do not support attributing the gap to one factor over the other)."
+  },
+  "headline_conclusion": "No significant difference between |Delta_skin|=0.0009 and |Delta_illum|=0.0010 (paired p=0.882, Cohen's d=-0.003); the data do not support attributing the subgroup gap to one factor over the other."
+}

@@ -1,0 +1,130 @@
+# Stage 4 epoch end-time schedule (pace 31 min/epoch from 22:17 Sep 17 IST)
+
+- overall  25 (skin0.25 ep10/15): ends Sep 17 22:17 IST
+- overall  26 (skin0.25 ep11/15): ends Sep 17 22:48 IST
+- overall  27 (skin0.25 ep12/15): ends Sep 17 23:19 IST
+- overall  28 (skin0.25 ep13/15): ends Sep 17 23:50 IST
+- overall  29 (skin0.25 ep14/15): ends Sep 18 00:21 IST
+- overall  30 (skin0.25 ep15/15): ends Sep 18 00:52 IST
+- overall  31 (skin0.5 ep 1/15): ends Sep 18 01:23 IST
+- overall  32 (skin0.5 ep 2/15): ends Sep 18 01:54 IST
+- overall  33 (skin0.5 ep 3/15): ends Sep 18 02:25 IST
+- overall  34 (skin0.5 ep 4/15): ends Sep 18 02:56 IST
+- overall  35 (skin0.5 ep 5/15): ends Sep 18 03:27 IST
+- overall  36 (skin0.5 ep 6/15): ends Sep 18 03:58 IST
+- overall  37 (skin0.5 ep 7/15): ends Sep 18 04:29 IST
+- overall  38 (skin0.5 ep 8/15): ends Sep 18 05:00 IST
+- overall  39 (skin0.5 ep 9/15): ends Sep 18 05:31 IST
+- overall  40 (skin0.5 ep10/15): ends Sep 18 06:02 IST
+- overall  41 (skin0.5 ep11/15): ends Sep 18 06:33 IST
+- overall  42 (skin0.5 ep12/15): ends Sep 18 07:04 IST
+- overall  43 (skin0.5 ep13/15): ends Sep 18 07:35 IST
+- overall  44 (skin0.5 ep14/15): ends Sep 18 08:06 IST
+- overall  45 (skin0.5 ep15/15): ends Sep 18 08:37 IST
+- overall  46 (skin1.0 ep 1/15): ends Sep 18 09:08 IST
+- overall  47 (skin1.0 ep 2/15): ends Sep 18 09:39 IST
+- overall  48 (skin1.0 ep 3/15): ends Sep 18 10:10 IST
+- overall  49 (skin1.0 ep 4/15): ends Sep 18 10:41 IST
+- overall  50 (skin1.0 ep 5/15): ends Sep 18 11:12 IST
+- overall  51 (skin1.0 ep 6/15): ends Sep 18 11:43 IST
+- overall  52 (skin1.0 ep 7/15): ends Sep 18 12:14 IST
+- overall  53 (skin1.0 ep 8/15): ends Sep 18 12:45 IST
+- overall  54 (skin1.0 ep 9/15): ends Sep 18 13:16 IST
+- overall  55 (skin1.0 ep10/15): ends Sep 18 13:47 IST
+- overall  56 (skin1.0 ep11/15): ends Sep 18 14:18 IST
+- overall  57 (skin1.0 ep12/15): ends Sep 18 14:49 IST
+- overall  58 (skin1.0 ep13/15): ends Sep 18 15:20 IST
+- overall  59 (skin1.0 ep14/15): ends Sep 18 15:51 IST
+- overall  60 (skin1.0 ep15/15): ends Sep 18 16:22 IST
+- overall  61 (skin2.0 ep 1/15): ends Sep 18 16:53 IST
+- overall  62 (skin2.0 ep 2/15): ends Sep 18 17:24 IST
+- overall  63 (skin2.0 ep 3/15): ends Sep 18 17:55 IST
+- overall  64 (skin2.0 ep 4/15): ends Sep 18 18:26 IST
+- overall  65 (skin2.0 ep 5/15): ends Sep 18 18:57 IST
+- overall  66 (skin2.0 ep 6/15): ends Sep 18 19:28 IST
+- overall  67 (skin2.0 ep 7/15): ends Sep 18 19:59 IST
+- overall  68 (skin2.0 ep 8/15): ends Sep 18 20:30 IST
+- overall  69 (skin2.0 ep 9/15): ends Sep 18 21:01 IST
+- overall  70 (skin2.0 ep10/15): ends Sep 18 21:32 IST
+- overall  71 (skin2.0 ep11/15): ends Sep 18 22:03 IST
+- overall  72 (skin2.0 ep12/15): ends Sep 18 22:34 IST
+- overall  73 (skin2.0 ep13/15): ends Sep 18 23:05 IST
+- overall  74 (skin2.0 ep14/15): ends Sep 18 23:36 IST
+- overall  75 (skin2.0 ep15/15): ends Sep 19 00:07 IST
+- overall  76 (illum0.0 ep 1/15): ends Sep 19 00:38 IST
+- overall  77 (illum0.0 ep 2/15): ends Sep 19 01:09 IST
+- overall  78 (illum0.0 ep 3/15): ends Sep 19 01:40 IST
+- overall  79 (illum0.0 ep 4/15): ends Sep 19 02:11 IST
+- overall  80 (illum0.0 ep 5/15): ends Sep 19 02:42 IST
+- overall  81 (illum0.0 ep 6/15): ends Sep 19 03:13 IST
+- overall  82 (illum0.0 ep 7/15): ends Sep 19 03:44 IST
+- overall  83 (illum0.0 ep 8/15): ends Sep 19 04:15 IST
+- overall  84 (illum0.0 ep 9/15): ends Sep 19 04:46 IST
+- overall  85 (illum0.0 ep10/15): ends Sep 19 05:17 IST
+- overall  86 (illum0.0 ep11/15): ends Sep 19 05:48 IST
+- overall  87 (illum0.0 ep12/15): ends Sep 19 06:19 IST
+- overall  88 (illum0.0 ep13/15): ends Sep 19 06:50 IST
+- overall  89 (illum0.0 ep14/15): ends Sep 19 07:21 IST
+- overall  90 (illum0.0 ep15/15): ends Sep 19 07:52 IST
+- overall  91 (illum0.25 ep 1/15): ends Sep 19 08:23 IST
+- overall  92 (illum0.25 ep 2/15): ends Sep 19 08:54 IST
+- overall  93 (illum0.25 ep 3/15): ends Sep 19 09:25 IST
+- overall  94 (illum0.25 ep 4/15): ends Sep 19 09:56 IST
+- overall  95 (illum0.25 ep 5/15): ends Sep 19 10:27 IST
+- overall  96 (illum0.25 ep 6/15): ends Sep 19 10:58 IST
+- overall  97 (illum0.25 ep 7/15): ends Sep 19 11:29 IST
+- overall  98 (illum0.25 ep 8/15): ends Sep 19 12:00 IST
+- overall  99 (illum0.25 ep 9/15): ends Sep 19 12:31 IST
+- overall 100 (illum0.25 ep10/15): ends Sep 19 13:02 IST
+- overall 101 (illum0.25 ep11/15): ends Sep 19 13:33 IST
+- overall 102 (illum0.25 ep12/15): ends Sep 19 14:04 IST
+- overall 103 (illum0.25 ep13/15): ends Sep 19 14:35 IST
+- overall 104 (illum0.25 ep14/15): ends Sep 19 15:06 IST
+- overall 105 (illum0.25 ep15/15): ends Sep 19 15:37 IST
+- overall 106 (illum0.5 ep 1/15): ends Sep 19 16:08 IST
+- overall 107 (illum0.5 ep 2/15): ends Sep 19 16:39 IST
+- overall 108 (illum0.5 ep 3/15): ends Sep 19 17:10 IST
+- overall 109 (illum0.5 ep 4/15): ends Sep 19 17:41 IST
+- overall 110 (illum0.5 ep 5/15): ends Sep 19 18:12 IST
+- overall 111 (illum0.5 ep 6/15): ends Sep 19 18:43 IST
+- overall 112 (illum0.5 ep 7/15): ends Sep 19 19:14 IST
+- overall 113 (illum0.5 ep 8/15): ends Sep 19 19:45 IST
+- overall 114 (illum0.5 ep 9/15): ends Sep 19 20:16 IST
+- overall 115 (illum0.5 ep10/15): ends Sep 19 20:47 IST
+- overall 116 (illum0.5 ep11/15): ends Sep 19 21:18 IST
+- overall 117 (illum0.5 ep12/15): ends Sep 19 21:49 IST
+- overall 118 (illum0.5 ep13/15): ends Sep 19 22:20 IST
+- overall 119 (illum0.5 ep14/15): ends Sep 19 22:51 IST
+- overall 120 (illum0.5 ep15/15): ends Sep 19 23:22 IST
+- overall 121 (illum1.0 ep 1/15): ends Sep 19 23:53 IST
+- overall 122 (illum1.0 ep 2/15): ends Sep 20 00:24 IST
+- overall 123 (illum1.0 ep 3/15): ends Sep 20 00:55 IST
+- overall 124 (illum1.0 ep 4/15): ends Sep 20 01:26 IST
+- overall 125 (illum1.0 ep 5/15): ends Sep 20 01:57 IST
+- overall 126 (illum1.0 ep 6/15): ends Sep 20 02:28 IST
+- overall 127 (illum1.0 ep 7/15): ends Sep 20 02:59 IST
+- overall 128 (illum1.0 ep 8/15): ends Sep 20 03:30 IST
+- overall 129 (illum1.0 ep 9/15): ends Sep 20 04:01 IST
+- overall 130 (illum1.0 ep10/15): ends Sep 20 04:32 IST
+- overall 131 (illum1.0 ep11/15): ends Sep 20 05:03 IST
+- overall 132 (illum1.0 ep12/15): ends Sep 20 05:34 IST
+- overall 133 (illum1.0 ep13/15): ends Sep 20 06:05 IST
+- overall 134 (illum1.0 ep14/15): ends Sep 20 06:36 IST
+- overall 135 (illum1.0 ep15/15): ends Sep 20 07:07 IST
+- overall 136 (illum2.0 ep 1/15): ends Sep 20 07:38 IST
+- overall 137 (illum2.0 ep 2/15): ends Sep 20 08:09 IST
+- overall 138 (illum2.0 ep 3/15): ends Sep 20 08:40 IST
+- overall 139 (illum2.0 ep 4/15): ends Sep 20 09:11 IST
+- overall 140 (illum2.0 ep 5/15): ends Sep 20 09:42 IST
+- overall 141 (illum2.0 ep 6/15): ends Sep 20 10:13 IST
+- overall 142 (illum2.0 ep 7/15): ends Sep 20 10:44 IST
+- overall 143 (illum2.0 ep 8/15): ends Sep 20 11:15 IST
+- overall 144 (illum2.0 ep 9/15): ends Sep 20 11:46 IST
+- overall 145 (illum2.0 ep10/15): ends Sep 20 12:17 IST
+- overall 146 (illum2.0 ep11/15): ends Sep 20 12:48 IST
+- overall 147 (illum2.0 ep12/15): ends Sep 20 13:19 IST
+- overall 148 (illum2.0 ep13/15): ends Sep 20 13:50 IST
+- overall 149 (illum2.0 ep14/15): ends Sep 20 14:21 IST
+- overall 150 (illum2.0 ep15/15): ends Sep 20 14:52 IST
+
+Sweep ends ~Sep 20 15:23 IST; probing+CF eval +2-4h; Stage 5 +1h.

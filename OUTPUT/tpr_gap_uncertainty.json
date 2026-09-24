@@ -1,0 +1,12 @@
+{
+  "tpr_gap_point": 0.4444,
+  "group_I_recall": 0.556,
+  "group_I_recall_CI95": [
+    0.222,
+    0.889
+  ],
+  "group_I_n_fake": 9,
+  "group_V_recall": 1.0,
+  "group_V_n_fake": 1,
+  "interpretation": "gap CI spans zero; indicative only"
+}

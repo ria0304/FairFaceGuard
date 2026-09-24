@@ -1,0 +1,15 @@
+{
+  "n_total": 2660,
+  "n_accepted": 2577,
+  "n_rejected": 83,
+  "rejection_rate": 0.0312,
+  "exclusion_rate": 0.0312,
+  "n_skin_only_rejected": 1,
+  "n_illum_only_rejected": 80,
+  "n_both_rejected": 12,
+  "rejection_reason_counts": {
+    "illum_only: ITA leaked too much (unintended change)": 80,
+    "both: ITA did not shift as intended": 12,
+    "skin_only: intended ITA shift not achieved": 1
+  }
+}

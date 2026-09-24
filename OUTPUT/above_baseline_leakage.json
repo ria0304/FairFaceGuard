@@ -1,0 +1,47 @@
+[
+  {
+    "config": "S0.0/I0.0",
+    "probe_raw": 0.5594,
+    "above_baseline": -0.0031
+  },
+  {
+    "config": "S0.0/I0.25",
+    "probe_raw": 0.5625,
+    "above_baseline": 0.0
+  },
+  {
+    "config": "S0.0/I0.5",
+    "probe_raw": 0.5625,
+    "above_baseline": 0.0
+  },
+  {
+    "config": "S0.0/I1.0",
+    "probe_raw": 0.5625,
+    "above_baseline": 0.0
+  },
+  {
+    "config": "S0.0/I2.0",
+    "probe_raw": 0.5625,
+    "above_baseline": 0.0
+  },
+  {
+    "config": "S0.25/I0.0",
+    "probe_raw": 0.5625,
+    "above_baseline": 0.0
+  },
+  {
+    "config": "S0.5/I0.0",
+    "probe_raw": 0.5656,
+    "above_baseline": 0.0031
+  },
+  {
+    "config": "S1.0/I0.0",
+    "probe_raw": 0.5656,
+    "above_baseline": 0.0031
+  },
+  {
+    "config": "S2.0/I0.0",
+    "probe_raw": 0.5625,
+    "above_baseline": 0.0
+  }
+]

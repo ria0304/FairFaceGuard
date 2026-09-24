@@ -1,0 +1,141 @@
+{
+  "pilot_config": {
+    "grid": [
+      0.0,
+      0.5,
+      1.0
+    ],
+    "epochs_per_run": 6,
+    "note": "reduced pilot, weights not checkpointed; metrics-only reuse"
+  },
+  "runs": [
+    {
+      "key": [
+        0.0,
+        0.0
+      ],
+      "epochs": [
+        {
+          "epoch": 1,
+          "total_loss": 2.0563
+        },
+        {
+          "epoch": 2,
+          "total_loss": 2.5446
+        },
+        {
+          "epoch": 3,
+          "total_loss": 2.4038
+        },
+        {
+          "epoch": 4,
+          "total_loss": 2.5055
+        },
+        {
+          "epoch": 5,
+          "total_loss": 2.6058
+        },
+        {
+          "epoch": 6,
+          "total_loss": 2.2485
+        }
+      ]
+    },
+    {
+      "key": [
+        0.5,
+        0.0
+      ],
+      "epochs": [
+        {
+          "epoch": 1,
+          "total_loss": 3.5931
+        },
+        {
+          "epoch": 2,
+          "total_loss": 2.8686
+        },
+        {
+          "epoch": 3,
+          "total_loss": 3.116
+        },
+        {
+          "epoch": 4,
+          "total_loss": 7.2544
+        },
+        {
+          "epoch": 5,
+          "total_loss": 3.105
+        },
+        {
+          "epoch": 6,
+          "total_loss": 2.5793
+        }
+      ]
+    },
+    {
+      "key": [
+        1.0,
+        0.0
+      ],
+      "epochs": [
+        {
+          "epoch": 1,
+          "total_loss": 2.7571
+        },
+        {
+          "epoch": 2,
+          "total_loss": 2.9611
+        },
+        {
+          "epoch": 3,
+          "total_loss": 3.1188
+        },
+        {
+          "epoch": 4,
+          "total_loss": 4.0498
+        },
+        {
+          "epoch": 5,
+          "total_loss": 2.7986
+        },
+        {
+          "epoch": 6,
+          "total_loss": 2.7274
+        }
+      ]
+    },
+    {
+      "key": [
+        0.0,
+        0.0
+      ],
+      "epochs": [
+        {
+          "epoch": 1,
+          "total_loss": 2.2597
+        },
+        {
+          "epoch": 2,
+          "total_loss": 2.3702
+        },
+        {
+          "epoch": 3,
+          "total_loss": 2.5672
+        },
+        {
+          "epoch": 4,
+          "total_loss": 2.97
+        },
+        {
+          "epoch": 5,
+          "total_loss": 3.4114
+        },
+        {
+          "epoch": 6,
+          "total_loss": 3.4267
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "generated_at_utc": "2026-09-19T14:18:29.717460+00:00",
+  "random_seed": 42,
+  "multi_seed_replication_seeds": [],
+  "checkpoint_path": "FaceForensics++/data/ffpp_processed/results/model_checkpoint.pt",
+  "config": {
+    "seed": 42,
+    "epochs": 20,
+    "data_root": "FaceForensics++/data/ffpp_processed",
+    "stage_run": "stage5-solo",
+    "sweep": "full 9 configs x 15 epochs (skin0/illum0 shared control)"
+  }
+}
